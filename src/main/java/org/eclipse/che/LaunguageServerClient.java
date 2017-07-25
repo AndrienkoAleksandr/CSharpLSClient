@@ -1,25 +1,52 @@
 package org.eclipse.che;
 
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeLensCapabilities;
+import org.eclipse.lsp4j.CompletionCapabilities;
+import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.DefinitionCapabilities;
+import org.eclipse.lsp4j.DidChangeConfigurationCapabilities;
+import org.eclipse.lsp4j.DidChangeWatchedFilesCapabilities;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightCapabilities;
+import org.eclipse.lsp4j.DocumentLinkCapabilities;
+import org.eclipse.lsp4j.DocumentSymbolCapabilities;
+import org.eclipse.lsp4j.ExecuteCommandCapabilities;
+import org.eclipse.lsp4j.FormattingCapabilities;
+import org.eclipse.lsp4j.HoverCapabilities;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.OnTypeFormattingCapabilities;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
+import org.eclipse.lsp4j.RangeFormattingCapabilities;
+import org.eclipse.lsp4j.ReferencesCapabilities;
+import org.eclipse.lsp4j.RenameCapabilities;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
+import org.eclipse.lsp4j.SignatureHelpCapabilities;
+import org.eclipse.lsp4j.SymbolCapabilities;
+import org.eclipse.lsp4j.SynchronizationCapabilities;
+import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.WorkspaceClientCapabilities;
+import org.eclipse.lsp4j.WorkspaceEditCapabilities;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.xtend.lib.macro.services.SourceTypeLookup;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -28,7 +55,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -36,7 +62,9 @@ public class LaunguageServerClient {
 
     private static final String LANGUAGE_ID = "csharp";
     private static final String TEST_FILE = "Program.cs";
-    private static final String PROJECT_NAME = "aspnet-web-simple";
+    private static final String PROJECT_NAME = "aspnet2.0";
+
+    private static final String CLIENT_NAME = "EclipseChe";
 
     private static LanguageClient languageClient = new LanguageClient() {
 
@@ -46,7 +74,7 @@ public class LaunguageServerClient {
         }
 
         @Override
-        public CompletableFuture<Void> showMessageRequest(ShowMessageRequestParams requestParams) {
+        public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
             return CompletableFuture.completedFuture(null);
         }
 
@@ -67,7 +95,15 @@ public class LaunguageServerClient {
     };
 
     public static void main(String[] args) throws Exception {
-        //ProcessBuilder processBuilder = new ProcessBuilder("node", "/home/user/projects/aCute/org.eclipse.acute.omnisharpServer/server/languageserver/server.js");
+
+        String serverExec;
+        if (args.length > 0) {
+           serverExec  = args[0];
+        } else {
+            serverExec = "/home/user/projects/omnisharp-node-client/languageserver/server.js";
+        }
+        System.out.println(serverExec);
+
         ProcessBuilder processBuilder = new ProcessBuilder("node", "/home/user/projects/omnisharp-node-client/languageserver/server.js");
 
         Process lspProcess = processBuilder.start();
@@ -86,11 +122,17 @@ public class LaunguageServerClient {
 
         Path filePath = getTestResourcePath(PROJECT_NAME + File.separator + TEST_FILE);
         String content = new String(Files.readAllBytes(filePath), UTF_8);
+        System.out.println("***********************************************************");
+        System.out.println("Try to open file by path : " + filePath.toUri().toString());
+        System.out.println("***********************************************************");
         openFiles(server, filePath, content);
-        hightLight(server, filePath, content);
-        //completion(server, filePath);
+//        System.out.println("___________________________________________________HightLight______________________________________________");
+//        hightLight(server, filePath, content);
+        System.out.println("_________________________________________________Completion_________________________________________________");
+        completion(server, filePath);
 
-//        format(server);
+        // format doesn't work lsp4j bug
+        // format(server);
 
         server.shutdown();
         server.exit();
@@ -111,12 +153,43 @@ public class LaunguageServerClient {
         }
     }
 
-    private static InitializeParams prepareInitializeParams(String projectPath) {
+    private static InitializeParams prepareInitializeParams(String projectPath) throws Exception {
         InitializeParams initializeParams = new InitializeParams();
         initializeParams.setProcessId(getProcessId());
         initializeParams.setRootPath(projectPath);
-        initializeParams.setCapabilities(new ClientCapabilities());
-        initializeParams.setClientName("EclipseCHE");
+        initializeParams.setRootUri(new URI(projectPath).toString());
+
+        ClientCapabilities clientCapabilities = new ClientCapabilities();
+        WorkspaceClientCapabilities workspace = new WorkspaceClientCapabilities();
+        workspace.setApplyEdit(false); //Change when support added
+        workspace.setDidChangeConfiguration(new DidChangeConfigurationCapabilities());
+        workspace.setDidChangeWatchedFiles(new DidChangeWatchedFilesCapabilities());
+        workspace.setExecuteCommand(new ExecuteCommandCapabilities());
+        workspace.setSymbol(new SymbolCapabilities());
+        workspace.setWorkspaceEdit(new WorkspaceEditCapabilities());
+        clientCapabilities.setWorkspace(workspace);
+
+        TextDocumentClientCapabilities textDocument = new TextDocumentClientCapabilities();
+        textDocument.setCodeAction(new CodeActionCapabilities());
+        textDocument.setCodeLens(new CodeLensCapabilities());
+        textDocument.setCompletion(new CompletionCapabilities(new CompletionItemCapabilities()));
+        textDocument.setDefinition(new DefinitionCapabilities());
+        textDocument.setDocumentHighlight(new DocumentHighlightCapabilities());
+        textDocument.setDocumentLink(new DocumentLinkCapabilities());
+        textDocument.setDocumentSymbol(new DocumentSymbolCapabilities());
+        textDocument.setFormatting(new FormattingCapabilities());
+        textDocument.setHover(new HoverCapabilities());
+        textDocument.setOnTypeFormatting(new OnTypeFormattingCapabilities());
+        textDocument.setRangeFormatting(new RangeFormattingCapabilities());
+        textDocument.setReferences(new ReferencesCapabilities());
+        textDocument.setRename(new RenameCapabilities());
+        textDocument.setSignatureHelp(new SignatureHelpCapabilities());
+        textDocument.setSynchronization(new SynchronizationCapabilities(true, false, true));
+        clientCapabilities.setTextDocument(textDocument);
+
+        initializeParams.setCapabilities(clientCapabilities);
+        initializeParams.setClientName(CLIENT_NAME);
+
         return initializeParams;
     }
 
@@ -154,9 +227,6 @@ public class LaunguageServerClient {
     private static void openFiles(LanguageServer server, Path filePath, String content) throws Exception {
         DidOpenTextDocumentParams didOpenTextDocumentParams2 = new DidOpenTextDocumentParams();
         didOpenTextDocumentParams2.setTextDocument(new TextDocumentItem());
-        System.out.println("***********************************************************");
-        System.out.println("Try to open file by path : " + filePath.toUri().toString());
-        System.out.println("***********************************************************");
         didOpenTextDocumentParams2.getTextDocument().setUri(filePath.toUri().toString());
         didOpenTextDocumentParams2.getTextDocument().setLanguageId(LANGUAGE_ID);
         didOpenTextDocumentParams2.getTextDocument().setVersion(1);
@@ -173,14 +243,15 @@ public class LaunguageServerClient {
       TextDocumentIdentifier textDocument = new TextDocumentIdentifier();
       textDocument.setUri(filePath.toUri().toString());
       textDocumentPositionParams.setTextDocument(textDocument);
-      textDocumentPositionParams.setPosition(new Position(0, 13));
+      textDocumentPositionParams.setPosition(new Position(0, 6));
       textDocumentPositionParams.setUri(filePath.toUri().toString());
 
-      CompletionList list = server.getTextDocumentService()
-                                  .completion(textDocumentPositionParams)
-                                  .get();
+      Either<List<CompletionItem>, CompletionList> list = server.getTextDocumentService()
+                                                                .completion(textDocumentPositionParams)
+                                                                .get();
 
-      list.getItems().forEach(elem -> System.out.println(elem.getLabel()));
+      System.out.println("_______________________________________________________" + list.getRight().getItems().size());
+      list.getRight().getItems().forEach(elem -> System.out.println("******************************" + elem.getLabel()));
     //            .getItems()
     //            .forEach(completionItem -> {
     //                System.out.println(completionItem.toString());
