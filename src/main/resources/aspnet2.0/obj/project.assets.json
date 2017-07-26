@@ -208,7 +208,7 @@
   },
   "libraries": {
     "Microsoft.NETCore.App/2.0.0-preview2-25407-01": {
-      "sha512": "kmdQn2qRH7RtJuWvA4LwKkLEZw09sqjesMPljtBoOxKrWCZ92NFClcGQsg7Cp7zkdYhZ5kxnNRPY0jIpOfidXA==",
+      "sha512": "J7IxiQRPCEI6DiusSGukLMveIGP2I/cj8qgP3/Or+7B+DtAPRywy69IUJtmWDfJoIVcC8UE3PeiWc1/ec9hB5A==",
       "type": "package",
       "path": "microsoft.netcore.app/2.0.0-preview2-25407-01",
       "files": [
@@ -1317,7 +1317,7 @@
       ]
     },
     "Microsoft.NETCore.DotNetAppHost/2.0.0-preview2-25407-01": {
-      "sha512": "i5l4YPCfsCzd1f4wj9nCa/A/NF/4X35dScIfBsEUer8/hvJ3CIQ76omshtSMrIKR1Tgfeqy+n+oqorgBpPfQ8Q==",
+      "sha512": "Ow5zr/MXVnya2z5vqTnbrHpza4ceFK/Xc+wHY5NwpB/xl0VDceQlE42IYhviyvxcAaOMGUp6fcg54jJ9UsNOEg==",
       "type": "package",
       "path": "microsoft.netcore.dotnetapphost/2.0.0-preview2-25407-01",
       "files": [
@@ -1329,7 +1329,7 @@
       ]
     },
     "Microsoft.NETCore.DotNetHostPolicy/2.0.0-preview2-25407-01": {
-      "sha512": "l4ot55rjyfoaX0p9d+EqAF+UKMAExdn3UQUKZx6w82sjEHlmZ+nrdJ5RgFXBb/uPEdeyFyA6mFYAzXlLv99jEA==",
+      "sha512": "r3a1HysKFwOskMoZDoYJE6x5PFO0n9oeu5tD84plDYKJJ/LRQEZnvHzp4MZcFZIBsXOY5+SER19y4jbA222AHg==",
       "type": "package",
       "path": "microsoft.netcore.dotnethostpolicy/2.0.0-preview2-25407-01",
       "files": [
@@ -1341,7 +1341,7 @@
       ]
     },
     "Microsoft.NETCore.DotNetHostResolver/2.0.0-preview2-25407-01": {
-      "sha512": "e022IpTc7pY0Eyt9a2uvMeywMx/C7aWrMPCKF1axUIB25ALYH2PWRv2ZsyyI+cYEAenuesQ+aYJGRGkfiDFZmQ==",
+      "sha512": "sEpXna4OKXN1pYXupC5KjLSTIy/8IdcP6yjlhc7p8cpPAuoMiDsX1h24esPrTsrLO6hil2woIPyJCqZVk23HtQ==",
       "type": "package",
       "path": "microsoft.netcore.dotnethostresolver/2.0.0-preview2-25407-01",
       "files": [
@@ -1353,7 +1353,7 @@
       ]
     },
     "Microsoft.NETCore.Platforms/2.0.0-preview2-25405-01": {
-      "sha512": "FwzSwCgFUXXTAxesBkXoTbTMZsJbXTLnOLH3Fg71zpDXoo9FQYK3E5acl/368IzaHKDGzCXMDTlK2mDo9ZeaIQ==",
+      "sha512": "jl61La4qznMH79z9L+6BGBfcwP7tPYbitEsraEcd9H6pzGXajWMUnLytqAPxW2MJCfVgz7lD1zUDkMj1JRBHcw==",
       "type": "package",
       "path": "microsoft.netcore.platforms/2.0.0-preview2-25405-01",
       "files": [
@@ -1368,7 +1368,7 @@
       ]
     },
     "Microsoft.Packaging.Tools/1.0.0-preview2-25401-01": {
-      "sha512": "ookNK5hbRSdHIIkkOo8EgAI8CMPIreiIvtKkCM8g0SS54tCYAwfYH/9QJYVbcOfap4GBaBu94t2MJlFPuARhHg==",
+      "sha512": "Zm5aZBd1En7ar1SuSDXEXDFzn7xi3T6fVAdDGQ/tnExUSxoheMQ6KdooEUeKOFDsMqflEz5Z/Uq4yinycLq9Qg==",
       "type": "package",
       "path": "microsoft.packaging.tools/1.0.0-preview2-25401-01",
       "files": [
@@ -1386,7 +1386,7 @@
       ]
     },
     "NETStandard.Library/2.0.0-preview2-25401-01": {
-      "sha512": "wP/P5NV9+rVZwN2sDemTWvnDZNl+s1vauqmdsnRgGYGSinxtkrMrIDdQpbhIZDwTHRni5YXxefjP5hOILqOhjw==",
+      "sha512": "BS6q8glkSSiqJVtZLapZLJduviOGA1MRRmk9/dbZP5Ct9UFfmEDSaaJa3dDxXlkwArzm7vWD+30fS7OBd/cZ0g==",
       "type": "package",
       "path": "netstandard.library/2.0.0-preview2-25401-01",
       "files": [
@@ -1519,25 +1519,25 @@
     ]
   },
   "packageFolders": {
-    "/home/user/.nuget/packages/": {}
+    "/home/antey/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/user/projects/CSharpLSClient/src/main/resources/aspnet2.0/aspnet2.0.csproj",
+      "projectUniqueName": "/home/antey/projects/CSharpLSClient/src/main/resources/aspnet2.0/aspnet2.0.csproj",
       "projectName": "aspnet2.0",
-      "projectPath": "/home/user/projects/CSharpLSClient/src/main/resources/aspnet2.0/aspnet2.0.csproj",
-      "packagesPath": "/home/user/.nuget/packages/",
-      "outputPath": "/home/user/projects/CSharpLSClient/src/main/resources/aspnet2.0/obj/",
+      "projectPath": "/home/antey/projects/CSharpLSClient/src/main/resources/aspnet2.0/aspnet2.0.csproj",
+      "packagesPath": "/home/antey/.nuget/packages/",
+      "outputPath": "/home/antey/projects/CSharpLSClient/src/main/resources/aspnet2.0/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/home/user/.nuget/NuGet/NuGet.Config"
+        "/home/antey/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "netcoreapp2.0"
       ],
       "sources": {
-        "/home/user/.dotnet/NuGetFallbackFolder": {},
+        "/home/antey/.dotnet/NuGetFallbackFolder": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

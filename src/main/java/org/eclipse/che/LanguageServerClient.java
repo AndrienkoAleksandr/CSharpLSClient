@@ -43,22 +43,16 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageServer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class LaunguageServerClient {
+public class LanguageServerClient {
 
     private static final String LANGUAGE_ID = "csharp";
     private static final String TEST_FILE = "Program.cs";
@@ -95,61 +89,53 @@ public class LaunguageServerClient {
     };
 
     public static void main(String[] args) throws Exception {
-
         String serverExec;
         if (args.length > 0) {
-           serverExec  = args[0];
+            serverExec = args[0];
         } else {
-            serverExec = "/home/user/projects/omnisharp-node-client/languageserver/server.js";
+            throw new RuntimeException("You forgot set up node server path like argument command line!!!!!");
         }
-        System.out.println(serverExec);
 
-        ProcessBuilder processBuilder = new ProcessBuilder("node", "/home/user/projects/omnisharp-node-client/languageserver/server.js");
+        Path projectPath = TestProjectGenerator.generateTestProject(PROJECT_NAME);
+
+        System.out.println("Try to start Language server process by node server path: " + serverExec);
+
+        ProcessBuilder processBuilder = new ProcessBuilder("node", serverExec);
 
         Process lspProcess = processBuilder.start();
 
-        LanguageServer server;
+        System.out.println("Try to connect to language server ........");
 
         Launcher<LanguageServer> launcher = Launcher.createLauncher(languageClient,
                                                                     LanguageServer.class,
                                                                     lspProcess.getInputStream(),
                                                                     lspProcess.getOutputStream());
         launcher.startListening();
-        server = launcher.getRemoteProxy();
+        LanguageServer server = launcher.getRemoteProxy();
 
-        Path projectPath = getTestResourcePath(PROJECT_NAME);
-        initialize(server, projectPath);
+        System.out.println("Begin initialization language server!!!");
 
-        Path filePath = getTestResourcePath(PROJECT_NAME + File.separator + TEST_FILE);
+        try {
+            initialize(server, projectPath);
+
+        Path filePath = projectPath.resolve(TEST_FILE);
         String content = new String(Files.readAllBytes(filePath), UTF_8);
         System.out.println("***********************************************************");
         System.out.println("Try to open file by path : " + filePath.toUri().toString());
         System.out.println("***********************************************************");
-        openFiles(server, filePath, content);
-//        System.out.println("___________________________________________________HightLight______________________________________________");
-//        hightLight(server, filePath, content);
-        System.out.println("_________________________________________________Completion_________________________________________________");
+
+        openFile(server, filePath, content);
+
+        hightLight(server, filePath, content);
+
         completion(server, filePath);
 
         // format doesn't work lsp4j bug
         // format(server);
 
-        server.shutdown();
-        server.exit();
-        //todo kill process
-    }
-
-    private static Path getTestResourcePath(String resource) throws URISyntaxException {
-        try {
-            ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-            URL fileUrl = classloader.getResource(resource);
-            if (fileUrl == null) {
-                throw new IllegalStateException("Failed to load resource file!!!!");
-            }
-            return Paths.get(fileUrl.toURI());
-        } catch (URISyntaxException e) {
-            System.err.println("Invalid Url ! ");
-            throw e;
+        } catch (Exception e) {
+            server.shutdown();
+            server.exit(); //todo kill process
         }
     }
 
@@ -224,7 +210,7 @@ public class LaunguageServerClient {
 
     }
 
-    private static void openFiles(LanguageServer server, Path filePath, String content) throws Exception {
+    private static void openFile(LanguageServer server, Path filePath, String content) throws Exception {
         DidOpenTextDocumentParams didOpenTextDocumentParams2 = new DidOpenTextDocumentParams();
         didOpenTextDocumentParams2.setTextDocument(new TextDocumentItem());
         didOpenTextDocumentParams2.getTextDocument().setUri(filePath.toUri().toString());
@@ -239,27 +225,30 @@ public class LaunguageServerClient {
     }
 
     private static void completion(LanguageServer server, Path filePath) throws Exception {
-      TextDocumentPositionParams textDocumentPositionParams = new TextDocumentPositionParams();
-      TextDocumentIdentifier textDocument = new TextDocumentIdentifier();
-      textDocument.setUri(filePath.toUri().toString());
-      textDocumentPositionParams.setTextDocument(textDocument);
-      textDocumentPositionParams.setPosition(new Position(0, 6));
-      textDocumentPositionParams.setUri(filePath.toUri().toString());
+        TextDocumentPositionParams textDocumentPositionParams = new TextDocumentPositionParams();
+        TextDocumentIdentifier textDocument = new TextDocumentIdentifier();
+        textDocument.setUri(filePath.toUri().toString());
+        textDocumentPositionParams.setTextDocument(textDocument);
+        textDocumentPositionParams.setPosition(new Position(0, 6));
+        textDocumentPositionParams.setUri(filePath.toUri().toString());
 
-      Either<List<CompletionItem>, CompletionList> list = server.getTextDocumentService()
-                                                                .completion(textDocumentPositionParams)
-                                                                .get();
+        System.out.println("*******************Try to get Completion*********************************************");
+        Either<List<CompletionItem>, CompletionList> list = server.getTextDocumentService()
+                .completion(textDocumentPositionParams)
+                .get();
 
-      System.out.println("_______________________________________________________" + list.getRight().getItems().size());
-      list.getRight().getItems().forEach(elem -> System.out.println("******************************" + elem.getLabel()));
-    //            .getItems()
-    //            .forEach(completionItem -> {
-    //                System.out.println(completionItem.toString());
-    //            }
-    //            );
-   }
+        System.out.println("_______________________________________________________" + list.getRight().getItems().size());
+        list.getRight().getItems().forEach(elem -> System.out.println("******************************" + elem.getLabel()));
+        System.out.println("_________________________________________________Completion_________________________________________________");
 
-   private static void hightLight(LanguageServer server, Path filePath, String content) throws ExecutionException, InterruptedException {
+        //            .getItems()
+        //            .forEach(completionItem -> {
+        //                System.out.println(completionItem.toString());
+        //            }
+        //            );
+    }
+
+    private static void hightLight(LanguageServer server, Path filePath, String content) throws ExecutionException, InterruptedException {
         TextDocumentPositionParams positionParams = new TextDocumentPositionParams();
         positionParams.setUri(filePath.toUri().toString());
         Position position = new Position();
@@ -273,15 +262,15 @@ public class LaunguageServerClient {
         positionParams.getTextDocument().setUri(filePath.toUri().toString());
 
         try {
-            System.out.println("*******************");
-           List<? extends DocumentHighlight> result = server.getTextDocumentService().documentHighlight(positionParams).get();
-           System.out.println(result);
-           System.out.println("^^^^^^^^^^^^^^^^^^");
+            System.out.println("*******************Try to get HightLight*********************************************");
+            List<? extends DocumentHighlight> result = server.getTextDocumentService().documentHighlight(positionParams).get();
+            System.out.println(result);
+            System.out.println("___________________________________________________HightLight______________________________________________");
         } catch (InterruptedException | ExecutionException e1) {
-           System.out.println("Failed to complete hightLight task");
-           throw e1;
+            System.out.println("Failed to complete hightLight task");
+            throw e1;
         }
-   }
+    }
 
 //    private static void format(LanguageServer server) throws Exception {
 //        DocumentRangeFormattingParams documentRangeFormattingParams = new DocumentRangeFormattingParams();
