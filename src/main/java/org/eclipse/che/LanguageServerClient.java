@@ -98,6 +98,11 @@ public class LanguageServerClient {
 
         Path projectPath = TestProjectGenerator.generateTestProject(PROJECT_NAME);
 
+        System.out.println("Restore project " + projectPath + "..........................");
+
+        DotNetRestoreCommand restoreCommand = new DotNetRestoreCommand(projectPath.toAbsolutePath().toString());
+        restoreCommand.start();
+
         System.out.println("Try to start Language server process by node server path: " + serverExec);
 
         ProcessBuilder processBuilder = new ProcessBuilder("node", serverExec);
