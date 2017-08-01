@@ -1,6 +1,8 @@
 
 package org.eclipse.che.provider;
 
+import org.eclipse.lsp4j.jsonrpc.json.StreamMessageConsumer;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,7 +13,7 @@ import static org.eclipse.lsp4j.jsonrpc.json.MessageConstants.CONTENT_LENGTH_HEA
 import static org.eclipse.lsp4j.jsonrpc.json.MessageConstants.CRLF;
 
 /**
- * Code was got from lsp4j lib
+ * Code was got from lsp4j lib {@link StreamMessageConsumer}
  */
 public class LSPDataProvider {
 
