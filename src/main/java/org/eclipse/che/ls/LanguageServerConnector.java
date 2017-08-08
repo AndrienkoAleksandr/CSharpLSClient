@@ -2,9 +2,11 @@ package org.eclipse.che.ls;
 
 import org.apache.log4j.Logger;
 import org.eclipse.lsp4j.*;
+import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.*;
@@ -24,6 +26,25 @@ public class LanguageServerConnector {
     private static final String CLIENT_NAME = "EclipseCheTest";
     private static final String LANGUAGE_ID = "csharp";
     private static final int    DEFAULT_TIME_OUT = 15;
+
+    private LanguageServer server;
+
+    public LanguageServerConnector(String serverExecPath) throws IOException {
+        logger.info("Try to start Language server process by node server path: " + serverExecPath);
+
+        ProcessBuilder processBuilder = new ProcessBuilder("node", serverExecPath);
+        Process lspProcess = processBuilder.start();
+
+        logger.info("Try to connect to language server ........");
+
+        Launcher<LanguageServer> launcher = Launcher.createLauncher(new LanguageClientImpl(),
+                LanguageServer.class,
+                lspProcess.getInputStream(),
+                lspProcess.getOutputStream());
+        launcher.startListening();
+
+        this.server = launcher.getRemoteProxy();
+    }
 
     private InitializeParams prepareInitializeParams(String projectPath) throws Exception {
         InitializeParams initializeParams = new InitializeParams();
@@ -80,7 +101,7 @@ public class LanguageServerConnector {
         return -1;
     }
 
-    public InitializeResult initialize(org.eclipse.lsp4j.services.LanguageServer server, Path projectPath) throws Exception {
+    public InitializeResult initialize(Path projectPath) throws Exception {
         InitializeParams initializeParams = prepareInitializeParams(projectPath.toAbsolutePath().toString());
         CompletableFuture<InitializeResult> completableFuture = server.initialize(initializeParams);
         try {
@@ -94,7 +115,7 @@ public class LanguageServerConnector {
 
     }
 
-    public void openFile(LanguageServer server, Path filePath, String content) throws Exception {
+    public void openFile(Path filePath, String content) throws Exception {
         DidOpenTextDocumentParams didOpenTextDocumentParams2 = new DidOpenTextDocumentParams();
         didOpenTextDocumentParams2.setTextDocument(new TextDocumentItem());
         didOpenTextDocumentParams2.getTextDocument().setUri(filePath.toUri().toString());
@@ -106,12 +127,12 @@ public class LanguageServerConnector {
         server.getTextDocumentService().didOpen(didOpenTextDocumentParams2);
     }
 
-    public List<CompletionItem> completion(org.eclipse.lsp4j.services.LanguageServer server, Path filePath) {
+    public List<CompletionItem> completion(Path filePath, Position position) {
         TextDocumentPositionParams textDocumentPositionParams = new TextDocumentPositionParams();
         TextDocumentIdentifier textDocument = new TextDocumentIdentifier();
         textDocument.setUri(filePath.toUri().toString());
         textDocumentPositionParams.setTextDocument(textDocument);
-        textDocumentPositionParams.setPosition(new Position(0, 6));
+        textDocumentPositionParams.setPosition(position);
         textDocumentPositionParams.setUri(filePath.toUri().toString());
         try {
             Either<List<CompletionItem>, CompletionList> result = server.getTextDocumentService()
@@ -130,7 +151,7 @@ public class LanguageServerConnector {
         return emptyList();
     }
 
-    public List<? extends DocumentHighlight> hightLight(LanguageServer server, Path filePath, String content) {
+    public List<? extends DocumentHighlight> hightLight(Path filePath, String content) {
         TextDocumentPositionParams positionParams = new TextDocumentPositionParams();
         positionParams.setUri(filePath.toUri().toString());
         Position position = new Position();
@@ -154,10 +175,7 @@ public class LanguageServerConnector {
     }
 
     /** Lsp4j contains bug and formatter doesn't work **/
-    public List<? extends TextEdit> format(LanguageServer server,
-                                            String fileName,
-                                            Position startPosition,
-                                            Position endPosition) {
+    public List<? extends TextEdit> format(String fileName, Position startPosition, Position endPosition) {
         DocumentRangeFormattingParams documentRangeFormattingParams = new DocumentRangeFormattingParams();
         documentRangeFormattingParams.setTextDocument(new TextDocumentIdentifier());
         documentRangeFormattingParams.getTextDocument().setUri(fileName);

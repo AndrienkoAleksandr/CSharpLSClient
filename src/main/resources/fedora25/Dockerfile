@@ -1,4 +1,4 @@
-FROM fedora:23
+FROM fedora:25
 
 RUN dnf -y install sudo curl mc nano tar
 RUN sudo su && curl --silent --location https://rpm.nodesource.com/setup_6.x | sudo bash -
