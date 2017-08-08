@@ -14,7 +14,14 @@
       <jdk.version>1.8</jdk.version>
   </properties>
 
+
   <dependencies>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+    </dependency>
+
     <dependency>
       <groupId>org.eclipse.lsp4j</groupId>
       <artifactId>org.eclipse.lsp4j</artifactId>
@@ -28,6 +35,9 @@
   </dependencies>
 
   <build>
+    <sourceDirectory>src/main/java</sourceDirectory>
+    <testSourceDirectory>src/test/java</testSourceDirectory>
+    <outputDirectory>target/classes</outputDirectory>
     <resources>
       <resource>
         <directory>src/main/resources</directory>
@@ -75,7 +85,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>org.eclipse.che.LanguageServerClient</mainClass>
+              <mainClass>org.eclipse.che.App</mainClass>
             </manifest>
           </archive>
         </configuration>

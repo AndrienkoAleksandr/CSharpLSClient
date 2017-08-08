@@ -1,4 +1,7 @@
-package org.eclipse.che;
+package org.eclipse.che.dotnet;
+
+import org.apache.log4j.Logger;
+import org.eclipse.che.ls.LanguageServerConnector;
 
 import java.util.concurrent.TimeUnit;
 
@@ -7,6 +10,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class DotNetRestoreCommand {
 
+    private final static Logger logger = Logger.getLogger(LanguageServerConnector.class);
+
     private final String projectName;
 
     public DotNetRestoreCommand(String projectName) {
@@ -14,6 +19,8 @@ public class DotNetRestoreCommand {
     }
 
     public void start() throws Exception {
+        logger.info("Restore project " + projectName);
+
         ProcessBuilder processBuilder = new ProcessBuilder();
         processBuilder.command("dotnet", "restore", projectName);
         Process process = processBuilder.start();
