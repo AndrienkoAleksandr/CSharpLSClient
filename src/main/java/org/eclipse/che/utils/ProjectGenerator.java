@@ -94,26 +94,4 @@ public class ProjectGenerator {
             });
         }
     }
-
-    public static void main(String[] args) throws IOException {
-        Path path1 = Paths.get("/home/antey/projects/CSharpLSClient/target/classes/aspnet2.0");
-        Path path2 = Paths.get("/home/antey/projects/CSharpLSClient/target/classes/aspnet2.0/Program.cs");
-        System.out.println(path1.relativize(path2));
-        path1 = Paths.get("/aspnet2.0");
-        path2 = Paths.get("/aspnet2.0/Program.cs");
-        System.out.println(path1.relativize(path2));
-
-//        deletePreviousPrj(Paths.get("/home/antey/projects/CSharpLSClient/target/aspnet2.0"));
-//        copyFilesRecursivly(Paths.get("/home/antey/projects/CSharpLSClient/target/classes/aspnet2.0"),
-//                            Paths.get("/home/antey/projects/CSharpLSClient/target/aspnet2.0"));
-
-        deletePreviousPrj(Paths.get("/home/antey/projects/CSharpLSClient/target/aspnet2.0"));
-        FileSystem fileSystem = FileSystems.newFileSystem(Paths.get("/home/antey/projects/CSharpLSClient/target/CSharpClient-1.0-SNAPSHOT.jar"), App.class.getClassLoader());
-        Path from = fileSystem.getPath("aspnet2.0").toAbsolutePath();
-        System.out.println(from);
-
-        copyFilesRecursively(from,
-                            Paths.get("/home/antey/projects/CSharpLSClient/target/aspnet2.0"));
-
-    }
 }

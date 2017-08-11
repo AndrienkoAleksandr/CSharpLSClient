@@ -13,6 +13,12 @@ public class LanguageClientImpl implements LanguageClient {
 
     private final static Logger logger = Logger.getLogger(LanguageClientImpl.class);
 
+    private DiagnosticsMessagesCollector collector;
+
+    public LanguageClientImpl(DiagnosticsMessagesCollector collector) {
+        this.collector = collector;
+    }
+
     @Override
     public void telemetryEvent(Object o) {
         logger.info(o);
@@ -20,6 +26,7 @@ public class LanguageClientImpl implements LanguageClient {
 
     @Override
     public void publishDiagnostics(PublishDiagnosticsParams publishDiagnosticsParams) {
+        collector.add(publishDiagnosticsParams.getUri(), publishDiagnosticsParams.getDiagnostics());
         logger.info(publishDiagnosticsParams);
     }
 

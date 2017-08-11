@@ -1,13 +1,10 @@
 package org.eclipse.che;
 
-import org.apache.log4j.Logger;
 import org.eclipse.che.dotnet.DotNetRestoreCommand;
-import org.eclipse.che.ls.LanguageClientImpl;
+import org.eclipse.che.ls.DiagnosticsMessagesCollector;
 import org.eclipse.che.ls.LanguageServerConnector;
 import org.eclipse.che.utils.ProjectGenerator;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.jsonrpc.Launcher;
-import org.eclipse.lsp4j.services.LanguageServer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,7 +26,8 @@ public class App {
 
         new DotNetRestoreCommand(prjPath.toAbsolutePath().toString()).start();
 
-        LanguageServerConnector languageServerConnector = new LanguageServerConnector(serverExecPath);
+        DiagnosticsMessagesCollector messagesCollector = new DiagnosticsMessagesCollector();
+        LanguageServerConnector languageServerConnector = new LanguageServerConnector(serverExecPath, messagesCollector);
         languageServerConnector.initialize(prjPath);
 
         Path filePath = prjPath.resolve(TEST_FILE);

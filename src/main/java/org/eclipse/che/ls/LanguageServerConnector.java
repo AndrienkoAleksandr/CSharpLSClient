@@ -18,6 +18,7 @@ import java.util.concurrent.TimeoutException;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 
 public class LanguageServerConnector {
 
@@ -29,7 +30,7 @@ public class LanguageServerConnector {
 
     private LanguageServer server;
 
-    public LanguageServerConnector(String serverExecPath) throws IOException {
+    public LanguageServerConnector(String serverExecPath, DiagnosticsMessagesCollector collector) throws IOException {
         logger.info("Try to start Language server process by node server path: " + serverExecPath);
 
         ProcessBuilder processBuilder = new ProcessBuilder("node", serverExecPath);
@@ -37,7 +38,7 @@ public class LanguageServerConnector {
 
         logger.info("Try to connect to language server ........");
 
-        Launcher<LanguageServer> launcher = Launcher.createLauncher(new LanguageClientImpl(),
+        Launcher<LanguageServer> launcher = Launcher.createLauncher(new LanguageClientImpl(collector),
                 LanguageServer.class,
                 lspProcess.getInputStream(),
                 lspProcess.getOutputStream());
@@ -172,6 +173,48 @@ public class LanguageServerConnector {
             logger.error("Failed to get hightLight tasks", e);
         }
         return emptyList();
+    }
+
+    public Hover hover(Path filePath, Position position) {
+        TextDocumentPositionParams textDocumentPositionParams = new TextDocumentPositionParams();
+        textDocumentPositionParams.setUri(filePath.toUri().toString());
+        textDocumentPositionParams.setPosition(position);
+        TextDocumentIdentifier textDocumentIdentifier = new TextDocumentIdentifier();
+        textDocumentIdentifier.setUri(filePath.toUri().toString());
+        textDocumentPositionParams.setTextDocument(textDocumentIdentifier);
+
+        try {
+            return server.getTextDocumentService().hover(textDocumentPositionParams).get(DEFAULT_TIME_OUT, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            logger.error("Failed to get hover", e);
+        }
+        return null;
+    }
+
+    public void didChange(Path filePath, String changeContent, Range range) {
+        DidChangeTextDocumentParams textDocumentParams = new DidChangeTextDocumentParams();
+        VersionedTextDocumentIdentifier versionedTextDocumentIdentifier = new VersionedTextDocumentIdentifier();
+        versionedTextDocumentIdentifier.setVersion(3);
+        versionedTextDocumentIdentifier.setUri(filePath.toUri().toString());
+        textDocumentParams.setTextDocument(versionedTextDocumentIdentifier);
+        textDocumentParams.setUri(filePath.toUri().toString());
+
+        TextDocumentContentChangeEvent contentChangeEvent = new TextDocumentContentChangeEvent();
+        contentChangeEvent.setText(changeContent);
+        contentChangeEvent.setRange(range);
+        textDocumentParams.setContentChanges(singletonList(contentChangeEvent));
+
+        server.getTextDocumentService().didChange(textDocumentParams);
+    }
+
+    public void saveDocument(Path filePath) {
+        TextDocumentIdentifier textDocumentIdentifier = new TextDocumentIdentifier();
+        textDocumentIdentifier.setUri(filePath.toUri().toString());
+
+        DidSaveTextDocumentParams didSaveTextDocumentParams = new DidSaveTextDocumentParams();
+        didSaveTextDocumentParams.setTextDocument(textDocumentIdentifier);
+
+        server.getTextDocumentService().didSave(didSaveTextDocumentParams);
     }
 
     /** Lsp4j contains bug and formatter doesn't work **/
